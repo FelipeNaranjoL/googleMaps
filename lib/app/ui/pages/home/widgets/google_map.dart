@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:found_me/app/ui/pages/home/home_controller.dart';
+import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
+import 'package:found_me/app/ui/pages/home/widgets/boton_llevar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -8,31 +9,60 @@ class MapView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //utilizamos este constructor para evitar redibujar todo el contenido nuevo de la vista de mapa y a su vez actualizar
+    //lo que el usuario ve, se necesita el parametro del contexto = _, el controlador de HomeController que en este caso es
+    //controller y finalmente un widget para desplegar los cambios en caso de que la validacion sea  == false
     return Consumer<HomeController>(
+      //en builder, se requiere el contexto, en este caso "_", el controlador y un widget en caso de que algo
+      //no salga como lo esperado
       builder: (_, controller, gpsMessageWidget) {
-        if (!controller.gpsEnabled) {
+        final state = controller.state;
+        //en caso de que state.gpsEnabled sea distinto de true, se desplegara el widget gpsMessageWidget
+        //que tiene por objetivo  mostrar al usuario una notificacion acerca de que debe encender su gps
+        //caso contrario, desplegara el mapa con las funciones que le añadimos
+        if (!state.gpsEnabled) {
           return gpsMessageWidget!;
         }
 
+        //esta es na ubicacion inicial del usuario, otorgada gracias a geolocator y dara un nivel de zoom de 10
         final initialCameraPosition = CameraPosition(
-          target: LatLng(controller.initialPosition!.latitude,
-              controller.initialPosition!.longitude),
+          target: LatLng(state.initialPosition!.latitude,
+              state.initialPosition!.longitude),
           zoom: 10,
         );
-        return GoogleMap(
-          markers: controller.markers,
-          polygons: controller.polygons,
-          polylines: controller.polylines,
-          onMapCreated: controller.onMapCreated,
-          initialCameraPosition: initialCameraPosition,
-          mapType: MapType.normal,
-          myLocationButtonEnabled: true,
-          myLocationEnabled: true,
-          zoomControlsEnabled: false,
-          compassEnabled: true,
-          onTap: controller.onTap,
+        // widget de google map, este desplegara el mapa cpmp tal siempre y cuando la api key este bien,
+        // tambien le pasamos la cameraposicion anteriormente creada para desplegar nuestra posicion dentro del mapa
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            GoogleMap(
+              //marcadores o puntos de ubicacion dentro del mapa
+              markers: state.markers.values.toSet(),
+              //los polylines son las lineas que se generan al ir a un punto A al B
+              polylines: state.polilynes.values.toSet(),
+              //esta funcion permite cambiar el estilo del mapa, en este caso, uso el mapa por defecto, por eso la
+              //funcion es bastante sencilla
+              onMapCreated: controller.onMapCreated,
+              //obtiene las coordenadas del dispositivo con la variable initialCameraPosition
+              initialCameraPosition: initialCameraPosition,
+              //se declara que tipo de mapa se vera en la vista, normal, satelital, semafoto, entre otros
+              mapType: MapType.normal,
+              //se visualiza el boton de gps o redirigir a mi posicion y mi punto o mi ubicacion desplegada en el mapa
+              myLocationButtonEnabled: false,
+              myLocationEnabled: true,
+              // el controlador de zoom, este se vera como unos botones, esta desactivada por no ser muy atractiva a la vista
+              zoomControlsEnabled: false,
+              // compass apra dar una mejor vista a la ubicacion del usuario y este se pueda guiar
+              compassEnabled: true,
+            ),
+            //esta linea es la generacion de un label por encima del mapa, con el fin de
+            //crear un buscador de lugares con la api de hereapi
+            const DondeTeLlevo(),
+          ],
         );
       },
+      // este seria el gpsMessageWidget, con el fin de mostrar un mensaje de que el gps se desactivo y es encesario estar encendido
+      //en todo momento para poder trabajar de una manera eficaz
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

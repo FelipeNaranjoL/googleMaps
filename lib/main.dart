@@ -16,7 +16,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      //ruta inicial donde siempre iniciara la app, hara las verificaciones pertinentes y dara acceso
+      //al mapa al usuario
       initialRoute: Routes.SPLASH,
+      //lista de rutas el cual podra moverse el usuario o sera movido en caso de realizar verificaciones
+      //de ubicacion y permisos
       routes: appRoutes(),
     );
   }

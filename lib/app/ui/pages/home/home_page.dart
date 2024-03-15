@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:found_me/app/ui/pages/home/home_controller.dart';
+import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
 import 'package:found_me/app/ui/pages/home/widgets/google_map.dart';
 import 'package:provider/provider.dart';
 
@@ -10,21 +10,29 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<HomeController>(
+      //esta es una estructura exclusiva de ChangeNotifierProvider, el cual recibira como parametro el HomeController
+      //requiere de un contexto, en este caso "_" y un controller, en este caso el HomeController y retornara el controlador resultante
       create: (_) {
+        //controlador que nos permite usar las funciones de HomeController
         final controller = HomeController();
-        controller.onMarkerTap.listen((String id) {
-          // print('$id');
-        });
         return controller;
       },
       child: Scaffold(
         appBar: AppBar(),
+        //aqui va la estructura del mapa, requiere del controller y un boleano para verificar una condicion, en este caso seria la
+        //de loading, en caso de que haya un cambio de valor, se redibujara el Selector y todo lo que haya dentro
         body: Selector<HomeController, bool>(
-          selector: (_, controller) => controller.loading,
+          //aqui selector requiere de un contexto con el cual se trabajara a lo largo de su estructura y un controller
+          //en el builder se trabajara con el contexto y el booleano, en este caso loading y entregara un widget, en este caso
+          //loadingWidget que sera una vista de un circulo cargando, simulando la carga de datos del mapa
+          selector: (_, controller) => controller.state.loading,
           builder: (context, loading, loadingWidget) {
+            //si loading == true,se saltara el widget de loadingWidget y desplegara el mapa, en caso de que el builder tenga el booleano == false,
+            //mostrara el loadingWidget
             if (loading) {
               return loadingWidget!;
             }
+            //MapView sera el mapa, esta ubicado en otro lado para hacer el codigo menos pesado de entender
             return const MapView();
           },
           child: const Center(
