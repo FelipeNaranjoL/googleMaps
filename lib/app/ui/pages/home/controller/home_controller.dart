@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -62,6 +63,11 @@ class HomeController extends ChangeNotifier {
           initialized = true;
           notifyListeners();
         }
+        //enlacamos el archivo de current.position, ya que es un singleton y ocupamos su metodo setValue para almacenar los datos
+        // lat y lng de mi posicion actual
+        CurrentPosition.i.setValue(
+          LatLng(position.latitude, position.longitude),
+        );
       },
       //en caso extremo, se advierte al programador el error y notifica a la app para que realice una accion
       onError: (e) {

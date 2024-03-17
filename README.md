@@ -68,7 +68,7 @@ google_map mejorar el diseño de peticion de encendido de gps
 
 5- enlaces para documentacion y otras peticiones de api
 PENDIENTE
-
+autosuggest: https://www.here.com/docs/bundle/geocoding-and-search-api-v7-api-reference/page/index.html#/paths/~1autosuggest/get
 
 OJO, PARA LOS CAMBIOS PARA IOS, DEBES VER
 *CLASE 1
