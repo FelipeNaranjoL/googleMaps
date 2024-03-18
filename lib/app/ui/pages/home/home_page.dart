@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
         return controller;
       },
       child: Scaffold(
-        appBar: AppBar(),
+        // appBar: AppBar(),
         //aqui va la estructura del mapa, requiere del controller y un boleano para verificar una condicion, en este caso seria la
         //de loading, en caso de que haya un cambio de valor, se redibujara el Selector y todo lo que haya dentro
         body: Selector<HomeController, bool>(

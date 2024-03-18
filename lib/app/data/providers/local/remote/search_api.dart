@@ -13,7 +13,6 @@ class SearchAPI {
   final _controller = StreamController<List<Place>?>.broadcast();
 //esta variable tiene el fin de almacenar el resultado final de la busqueda
   Stream<List<Place>?> get onResults => _controller.stream;
-  //PENDIENTE
 //esta funcion tiene como objetivo ser la conexion de la api de hereapi, especificamente la funcion de autosuggest, envuielta en un try, catch en caso de que hayan errores
 //tambien cuenta con los parametros que estimo convenientes para la busqueda mas la apikey
 //los cuales retornaran en forma de lista y se veran desplegada en la vista de la app

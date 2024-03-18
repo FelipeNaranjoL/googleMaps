@@ -19,12 +19,20 @@ class DondeTeLlevo extends StatelessWidget {
         //al precionar el boton, lo redirigira a la vista de SearchPlacePage, en el cual podra escribir la ubicacion deseada y se desplegara
         //los datos sugeridos por la api de hereapi mediante la funcion de autosuggest
         child: CupertinoButton(
-          onPressed: () {
-            final route = MaterialPageRoute(
-              builder: (_) => SearchPlacePage(),
+          onPressed: () async {
+            final route = MaterialPageRoute<SearchResponse>(
+              builder: (_) => const SearchPlacePage(),
             );
-            Navigator.push(context, route);
+            final response = await Navigator.push<SearchResponse>(
+              context,
+              route,
+            );
+            //en caso de que la respuesta sea distinta de nula, nos entregara el titulo de origen
+            if (response != null) {
+              print('origen: ${response.origin.title}');
+            }
           },
+          //el resto es contenido visual para hacer mas atractivo la vista
           padding: EdgeInsets.zero,
           child: Container(
             width: double.infinity,

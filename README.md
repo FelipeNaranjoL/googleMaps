@@ -76,3 +76,6 @@ OJO, PARA LOS CAMBIOS PARA IOS, DEBES VER
 
 POR SI EL CLIENTE QUIERE CAMBIAR EL ESTILO DEL MAPA
 CLASE 4
+
+*linea 21 de home_page.dart, el appbar esta comentado, en un futuro usalo por si quieres
+agregar diseño
