@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:found_me/app/data/providers/local/geolocator_wrapper.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
 import 'package:found_me/app/ui/pages/home/widgets/google_map.dart';
 import 'package:provider/provider.dart';
@@ -12,11 +13,10 @@ class HomePage extends StatelessWidget {
     return ChangeNotifierProvider<HomeController>(
       //esta es una estructura exclusiva de ChangeNotifierProvider, el cual recibira como parametro el HomeController
       //requiere de un contexto, en este caso "_" y un controller, en este caso el HomeController y retornara el controlador resultante
-      create: (_) {
-        //controlador que nos permite usar las funciones de HomeController
-        final controller = HomeController();
-        return controller;
-      },
+      //dentro de HomeController se hace referencia a GeolocatorWrapper para usar sus metodos
+      create: (_) => HomeController(
+        GeolocatorWrapper(),
+      ),
       child: Scaffold(
         // appBar: AppBar(),
         //aqui va la estructura del mapa, requiere del controller y un boleano para verificar una condicion, en este caso seria la

@@ -3,8 +3,8 @@ import 'package:found_me/app/ui/pages/search_place/search_place_controller.dart'
 import 'package:found_me/app/ui/pages/search_place/widgets/label_input.dart';
 import 'package:provider/provider.dart';
 
-class cabeceraInputs extends StatelessWidget {
-  const cabeceraInputs({
+class CabeceraInputs extends StatelessWidget {
+  const CabeceraInputs({
     super.key,
   });
 

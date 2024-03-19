@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
 import 'package:found_me/app/ui/pages/search_place/search_place_page.dart';
+import 'package:provider/provider.dart';
 
 class DondeTeLlevo extends StatelessWidget {
   const DondeTeLlevo({
@@ -27,9 +29,14 @@ class DondeTeLlevo extends StatelessWidget {
               context,
               route,
             );
-            //en caso de que la respuesta sea distinta de nula, nos entregara el titulo de origen
+            //en caso de que la respuesta sea distinta de nula, asignaremos el origen y el destino deseado por el usuario
             if (response != null) {
-              print('origen: ${response.origin.title}');
+              // print('origen: ${response.origin.title}');
+              final controller = context.read<HomeController>();
+              controller.setOriginAndDestination(
+                response.origin,
+                response.destination,
+              );
             }
           },
           //el resto es contenido visual para hacer mas atractivo la vista

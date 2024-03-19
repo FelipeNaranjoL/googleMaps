@@ -1,3 +1,4 @@
+import 'package:found_me/app/domain/models/place.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomeState {
@@ -9,23 +10,30 @@ class HomeState {
   final Map<MarkerId, Marker> markers;
   final Map<PolylineId, Polyline> polilynes;
   final LatLng? initialPosition;
+  final Place? origin, destination;
 
 //constructor de las variables
-  HomeState(
-      {required this.loading,
-      required this.gpsEnabled,
-      required this.markers,
-      required this.polilynes,
-      required this.initialPosition});
+  HomeState({
+    required this.loading,
+    required this.gpsEnabled,
+    required this.markers,
+    required this.polilynes,
+    required this.initialPosition,
+    required this.origin,
+    required this.destination,
+  });
 
 //funcion encargada de mandar un homeState que se pueda modificar los valores por defecto de esta funcion,
 //tiene como nombre initialState
   static HomeState get initialState => HomeState(
-      loading: true,
-      gpsEnabled: false,
-      markers: {},
-      polilynes: {},
-      initialPosition: null);
+        loading: true,
+        gpsEnabled: false,
+        markers: {},
+        polilynes: {},
+        initialPosition: null,
+        origin: null,
+        destination: null,
+      );
 
 //funcion que permite modificar los valores de estas variables dentro del home_controller.dart
   HomeState copyWith({
@@ -34,6 +42,8 @@ class HomeState {
     Map<MarkerId, Marker>? markers,
     Map<PolylineId, Polyline>? polilynes,
     LatLng? initialPosition,
+    Place? origin,
+    Place? destination,
   }) {
     //aqui se retorna el valor actual o almacenado de las variables o el nuevo modificado
     return HomeState(
@@ -42,6 +52,8 @@ class HomeState {
       markers: markers ?? this.markers,
       polilynes: polilynes ?? this.polilynes,
       initialPosition: initialPosition ?? this.initialPosition,
+      origin: origin ?? this.origin,
+      destination: destination ?? this.destination,
     );
   }
 }

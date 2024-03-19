@@ -1,4 +1,4 @@
-import 'package:found_me/app/data/providers/local/remote/search_api.dart';
+import 'package:found_me/app/data/providers/remote/search_api.dart';
 import 'package:found_me/app/domain/models/place.dart';
 import 'package:found_me/app/domain/repositories/search_repository.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;

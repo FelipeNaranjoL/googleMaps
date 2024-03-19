@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:found_me/app/data/providers/local/remote/search_api.dart';
+import 'package:found_me/app/data/providers/remote/search_api.dart';
 import 'package:found_me/app/data/repositories_impl/search_repository_impl.dart';
 import 'package:found_me/app/domain/models/place.dart';
 import 'package:found_me/app/ui/pages/search_place/search_place_controller.dart';
@@ -48,7 +48,7 @@ class SearchPlacePage extends StatelessWidget {
             // ignore: prefer_const_constructors
             child: Column(
               children: const [
-                cabeceraInputs(),
+                CabeceraInputs(),
                 SizedBox(
                   height: 10,
                 ),
