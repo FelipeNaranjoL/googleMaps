@@ -4,6 +4,7 @@ import 'package:found_me/app/data/providers/local/geolocator_wrapper.dart';
 import 'package:found_me/app/domain/models/place.dart';
 import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
+import 'package:found_me/app/utils/fit_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -86,7 +87,7 @@ class HomeController extends ChangeNotifier {
   }
 
 //esta funcion define el origen y destino que haya seleccionado el usuario
-  void setOriginAndDestination(Place origin, Place destination) {
+  void setOriginAndDestination(Place origin, Place destination) async {
     //esto es esto
     //final copy = Map<MarkerId, Marker>.from(_state.markers);
     //pero mas resumido
@@ -116,23 +117,50 @@ class HomeController extends ChangeNotifier {
       destination: destination,
       markers: copy,
     );
+    //se le indica a _mapController que anime la camara para visualizar el origen y destino
+    //que el usuario haya designado y se notifica a la app
+    await _mapController?.animateCamera(
+      fitMap(
+        origin.position,
+        destination.position,
+        padding: 120,
+      ),
+    );
     notifyListeners();
   }
 
 //funcion encargada de redirigir al usuario a las configuraciones de gps para habilitarlo
   Future<void> turnOnGps() => _geolocator.openAppSettings();
 
-//
-  Future<void> zoomIn() async {
-    if (_mapController != null) {
-      final zoom = await _mapController!.getZoomLevel();
-    }
-  }
+// metodo que hace zoom al mapa
+  Future<void> zoomIn() => _zoom(true);
 
-  //
-  Future<void> zoomOut() async {
+  //metodo que quita zoom al mapa
+  Future<void> zoomOut() => _zoom(false);
+
+//funcionamiento del zoom
+//mientras _mapController sea distinto de nulo, se creara una variable zoom que controlara el nivel de
+//del mapa, si zoomIn es falso, se reducira el valor de zoom, llegando como limite a 0,
+// caso contrario, aumentara en 1
+  Future<void> _zoom(bool zoomIn) async {
     if (_mapController != null) {
-      final zoom = await _mapController!.getZoomLevel();
+      double zoom = await _mapController!.getZoomLevel();
+      if (!zoomIn) {
+        if (zoom - 1 <= 0) {
+          return;
+        }
+      }
+      zoom = zoomIn ? zoom + 1 : zoom - 1;
+      //luego se obtiene la parte visible del mapa para calcular el centro entre la esquina superior derecha
+      //y la esquina inferior izquierda
+      final bounds = await _mapController!.getVisibleRegion();
+      final northeast = bounds.northeast;
+      final southwest = bounds.southwest;
+      final center = LatLng((northeast.latitude + southwest.latitude) / 2,
+          (northeast.longitude + southwest.longitude) / 2);
+      //se obtiene ese dato y se actualiza la camara para realizar la peticion de zoom que el usuario requiera
+      final cameraUpdate = CameraUpdate.newLatLngZoom(center, zoom);
+      await _mapController!.animateCamera(cameraUpdate);
     }
   }
 
