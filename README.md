@@ -79,3 +79,5 @@ CLASE 4
 
 *linea 21 de home_page.dart, el appbar esta comentado, en un futuro usalo por si quieres
 agregar diseño
+* en circle_marker.dart y custom_marker puedes modificar la ubicacion y el tamaño de los circulos y rectangulos que se ven en el mapa una
+vez seleccionas la ubicacion origin y destination

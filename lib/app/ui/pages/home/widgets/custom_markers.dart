@@ -107,11 +107,16 @@ class MyCustomMarker extends CustomPainter {
       );
     } else {
       //en cualquier otro caso, mostrara el tiuempo de duracion de viaje en el lugar del icono
-      //y acompañado del texto "min"
+      //y acompañado del texto "min" o "horas"
+      //variable que almacenara el valor de minutos entre punto A y B y que sera convertido en Hrs o Min dependiendo del tiempo del mismo
+      final realDuraation = Duration(seconds: duration!);
+      final minutes = realDuraation.inMinutes;
+      final String durationAsText =
+          "${minutes > 59 ? realDuraation.inHours : minutes}";
       _drawText(
         canvas: canvas,
         size: size,
-        text: "$duration",
+        text: durationAsText,
         fontSize: 28,
         dy: -10,
         color: Colors.white,
@@ -121,7 +126,7 @@ class MyCustomMarker extends CustomPainter {
       _drawText(
         canvas: canvas,
         size: size,
-        text: "Min",
+        text: minutes > 59 ? "Horas" : "Min",
         fontSize: 20,
         dy: 15,
         color: Colors.white,

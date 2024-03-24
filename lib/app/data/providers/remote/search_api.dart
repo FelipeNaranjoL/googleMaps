@@ -1,7 +1,7 @@
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:found_me/app/domain/models/place.dart';
+import 'package:found_me/app/helpers/const.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 
 class SearchAPI {
@@ -26,7 +26,7 @@ class SearchAPI {
       final response = await _dio.get(
         'https://autosuggest.search.hereapi.com/v1/autosuggest',
         queryParameters: {
-          "apiKey": 'f4OOycVlftmeydXLbqoyp5x6q53x0QZde_WEOKANPRQ',
+          "apiKey": apiKey,
           "q": query,
           "at": "${at.latitude},${at.longitude}",
           "in": 'countryCode:CHL',

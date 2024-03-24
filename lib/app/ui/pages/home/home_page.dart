@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:found_me/app/data/providers/local/geolocator_wrapper.dart';
+import 'package:found_me/app/data/providers/remote/router_api.dart';
+import 'package:found_me/app/data/repositories_impl/routes_repository_impl.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
 import 'package:found_me/app/ui/pages/home/widgets/google_map.dart';
 import 'package:provider/provider.dart';
@@ -13,9 +16,15 @@ class HomePage extends StatelessWidget {
     return ChangeNotifierProvider<HomeController>(
       //esta es una estructura exclusiva de ChangeNotifierProvider, el cual recibira como parametro el HomeController
       //requiere de un contexto, en este caso "_" y un controller, en este caso el HomeController y retornara el controlador resultante
-      //dentro de HomeController se hace referencia a GeolocatorWrapper para usar sus metodos
+      //dentro de HomeController se hace referencia a GeolocatorWrapper para usar sus metodos y se agrega RouteReposirotyImpl
+      //RouteReposirotyImpl para implementar o usar la clase RoutesApi, acceda a sus funciones y mediante Dio nos de una respuesta
       create: (_) => HomeController(
         GeolocatorWrapper(),
+        RouteReposirotyImpl(
+          RoutesApi(
+            Dio(),
+          ),
+        ),
       ),
       child: Scaffold(
         // appBar: AppBar(),

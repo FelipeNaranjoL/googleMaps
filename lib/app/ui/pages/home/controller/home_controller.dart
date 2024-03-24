@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:found_me/app/data/providers/local/geolocator_wrapper.dart';
 import 'package:found_me/app/domain/models/place.dart';
+import 'package:found_me/app/domain/repositories/routes_repository.dart';
 import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
+import 'package:found_me/app/ui/pages/home/widgets/circle_marker.dart';
 import 'package:found_me/app/ui/pages/home/widgets/custom_markers.dart';
 import 'package:found_me/app/utils/fit_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,9 +24,13 @@ class HomeController extends ChangeNotifier {
   GoogleMapController? _mapController;
   //hace referencia al doc GeolocatorWrapper.dart para usar sus metodos
   final GeolocatorWrapper _geolocator;
+  //variable que almacenara la clase RoutesRepository y su metodo
+  final RoutesRepository _routesRepository;
+  //
+  BitmapDescriptor? _dotMarker;
 
-//funcion encargada de ejecutar _init y _geolocator
-  HomeController(this._geolocator) {
+//funcion encargada de ejecutar _init y _geolocator, _routesRepository
+  HomeController(this._geolocator, this._routesRepository) {
     _init();
   }
 
@@ -43,6 +49,8 @@ class HomeController extends ChangeNotifier {
       },
     );
     _initLocationUpdates();
+    //variable que iniciara  el marker de punto de partida
+    _dotMarker = await getDotMarker();
   }
 
   //funcion encargada de dar las actualizaciones de la posicion inicial del usuario en caso de que prenda o apague el gps
@@ -90,50 +98,88 @@ class HomeController extends ChangeNotifier {
 
 //esta funcion define el origen y destino que haya seleccionado el usuario
   void setOriginAndDestination(Place origin, Place destination) async {
-    //esto es esto
-    //final copy = Map<MarkerId, Marker>.from(_state.markers);
-    //pero mas resumido
-    final copy = {..._state.markers};
-    //se generan los id de los marcadores de manera personalizada
-    const originId = MarkerId('origin');
-    const destinationId = MarkerId('destination');
-    //variables que mostrara el icono dependiendo si es origin o destination
-    //si es origen, mostrara el icono de gps, si es destino, mostrara el tiempo de llegada estimada
-    final originIcon = await _placeToMarker(origin, null);
-    final destinationIcon = await _placeToMarker(destination, 30);
+    //llamado del metodo get para formar una polilyne
+    final routes = await _routesRepository.get(
+      origin: origin.position,
+      destination: destination.position,
+    );
+    //condiciones para que no se caigfa la app en caso de crear una polyline mala
+    if (routes != null && routes.isNotEmpty) {
+      //esto es esto
+      //final copy = Map<MarkerId, Marker>.from(_state.markers);
+      //pero mas resumido
+      final markersCopy = {..._state.markers};
+      //se generan los id de los marcadores de manera personalizada y tambien para los puntos que se generaran en el mapa para que se entienda mejor
+      const originId = MarkerId('origin');
+      const destinationId = MarkerId('destination');
+      const originDot = MarkerId('originDot');
+      const destinationDot = MarkerId('destinationDot');
 
-    //dentro de los marcadores, se asignara el id, su posicion y su nombre flotante
-    //segun la informacion de su origen/destino
-    final originMarker = Marker(
-      markerId: originId,
-      position: origin.position,
-      icon: originIcon,
-    );
-    final destinationMarker = Marker(
-      markerId: destinationId,
-      position: destination.position,
-      icon: destinationIcon,
-    );
-    //se asigna el id dentro de la lista de originMarker/destinationMarker
-    copy[originId] = originMarker;
-    copy[destinationId] = destinationMarker;
-    //se envia los datos asignados en el buscador al metodo copyWith
-    //reemplazando los valores de ese metodo con los asignados en este archivo
-    _state = _state.copyWith(
-      origin: origin,
-      destination: destination,
-      markers: copy,
-    );
-    //se le indica a _mapController que anime la camara para visualizar el origen y destino
-    //que el usuario haya designado y se notifica a la app
-    await _mapController?.animateCamera(
-      fitMap(
-        origin.position,
-        destination.position,
-        padding: 120,
-      ),
-    );
-    notifyListeners();
+      //variable para acceder a los datos de routes
+      final route = routes.first;
+      //variables que mostrara el icono dependiendo si es origin o destination
+      //si es origen, mostrara el icono de gps, si es destino, mostrara el tiempo de llegada estimada
+      final originIcon = await _placeToMarker(origin, null);
+      final destinationIcon = await _placeToMarker(destination, route.duration);
+
+      //dentro de los marcadores, se asignara el id, su posicion y su nombre flotante
+      //segun la informacion de su origen/destino
+      final originMarker = Marker(
+        markerId: originId,
+        position: origin.position,
+        icon: originIcon,
+        anchor: const Offset(0.5, 1.2),
+      );
+      final destinationMarker = Marker(
+        markerId: destinationId,
+        position: destination.position,
+        icon: destinationIcon,
+        anchor: const Offset(0.5, 1.2),
+      );
+      //se asigna el id dentro de la lista de originMarker/destinationMarker y en los puntos de originDot y destinationDot
+      markersCopy[originId] = originMarker;
+      markersCopy[destinationId] = destinationMarker;
+      markersCopy[originDot] = Marker(
+        markerId: originDot,
+        position: route.points.first,
+        icon: _dotMarker!,
+        anchor: const Offset(0.5, 0.5),
+      );
+      markersCopy[destinationDot] = Marker(
+        markerId: destinationDot,
+        position: route.points.last,
+        icon: _dotMarker!,
+        anchor: const Offset(0.5, 0.5),
+      );
+      //variable que almacenara la copia de la polyline, el id de la misma y el polyline
+      final polylinesCopy = {..._state.polilynes};
+      const polylineId = PolylineId('route');
+      final polyline = Polyline(
+        polylineId: polylineId,
+        points: route.points,
+        width: 2,
+      );
+      //guardamos la copia del polilyne dentro de la polyline en si junto con su id
+      polylinesCopy[polylineId] = polyline;
+      //se envia los datos asignados en el buscador al metodo copyWith
+      //reemplazando los valores de ese metodo con los asignados en este archivo
+      _state = _state.copyWith(
+        origin: origin,
+        destination: destination,
+        markers: markersCopy,
+        polilynes: polylinesCopy,
+      );
+      //se le indica a _mapController que anime la camara para visualizar el origen y destino
+      //que el usuario haya designado y se notifica a la app
+      await _mapController?.animateCamera(
+        fitMap(
+          origin.position,
+          destination.position,
+          padding: 120,
+        ),
+      );
+      notifyListeners();
+    }
   }
 
 //funcion encargada de redirigir al usuario a las configuraciones de gps para habilitarlo
