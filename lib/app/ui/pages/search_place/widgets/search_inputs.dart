@@ -23,10 +23,12 @@ class CabeceraInputs extends StatelessWidget {
           //focusNode: se utiliza para definir donde realiazar el foco de atencion en los input
           //placeholder: el texto de ejemplo o guia para el usuario
           //onChanged: metodo encargado de realizar llamadas a la api cuando se ingresa algun texto
+          //onClear: limpiara el contenido almacenado de una direccion en caso de que se haya eliminado
           controller: controller.originController,
           focusNode: controller.originFocusNode,
           placeholder: 'origen',
           onChanged: controller.onQueryChanged,
+          onClear: controller.clearQuery,
         ),
         //columna de destino
         LabelInput(
@@ -35,10 +37,13 @@ class CabeceraInputs extends StatelessWidget {
           //focusNode: se utiliza para definir donde realiazar el foco de atencion en los input
           //placeholder: el texto de ejemplo o guia para el usuario
           //onChanged: metodo encargado de realizar llamadas a la api cuando se ingresa algun texto
+          //onClear: limpiara el contenido almacenado de una direccion en caso de que se haya eliminado
+
           controller: controller.destinationController,
           focusNode: controller.destinationFocusNode,
           placeholder: 'Destino',
           onChanged: controller.onQueryChanged,
+          onClear: controller.clearQuery,
         ),
       ],
     );

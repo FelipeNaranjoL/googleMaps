@@ -37,6 +37,7 @@ class SearchPlacePage extends StatelessWidget {
         //cambiando el background y el color de volver de appBar
         //envolvemos en un wigdet el appBar para gestionar mejor nuestro codigo
         appBar: const SearchAppBar(),
+        backgroundColor: Color.fromARGB(236, 200, 244, 255),
         //caja de tamaño que consumira todo el alto y ancho de la pantalla
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),

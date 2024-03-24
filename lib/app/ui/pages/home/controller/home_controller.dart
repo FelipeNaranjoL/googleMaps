@@ -4,9 +4,11 @@ import 'package:found_me/app/data/providers/local/geolocator_wrapper.dart';
 import 'package:found_me/app/domain/models/place.dart';
 import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
+import 'package:found_me/app/ui/pages/home/widgets/custom_markers.dart';
 import 'package:found_me/app/utils/fit_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:ui' as ui;
 
 class HomeController extends ChangeNotifier {
   //exportacion del home_state.dart para poder trabajar con las variables creadas dentro del archivo
@@ -95,17 +97,22 @@ class HomeController extends ChangeNotifier {
     //se generan los id de los marcadores de manera personalizada
     const originId = MarkerId('origin');
     const destinationId = MarkerId('destination');
+    //variables que mostrara el icono dependiendo si es origin o destination
+    //si es origen, mostrara el icono de gps, si es destino, mostrara el tiempo de llegada estimada
+    final originIcon = await _placeToMarker(origin, null);
+    final destinationIcon = await _placeToMarker(destination, 30);
+
     //dentro de los marcadores, se asignara el id, su posicion y su nombre flotante
     //segun la informacion de su origen/destino
     final originMarker = Marker(
       markerId: originId,
       position: origin.position,
-      infoWindow: InfoWindow(title: origin.title),
+      icon: originIcon,
     );
     final destinationMarker = Marker(
       markerId: destinationId,
       position: destination.position,
-      infoWindow: InfoWindow(title: destination.title),
+      icon: destinationIcon,
     );
     //se asigna el id dentro de la lista de originMarker/destinationMarker
     copy[originId] = originMarker;
@@ -162,6 +169,35 @@ class HomeController extends ChangeNotifier {
       final cameraUpdate = CameraUpdate.newLatLngZoom(center, zoom);
       await _mapController!.animateCamera(cameraUpdate);
     }
+  }
+
+//funcion que mostrara la duracion en tiempo entre 2 puntos
+  Future<BitmapDescriptor> _placeToMarker(Place place, int? duration) async {
+    //se crean las variables que almacenaran el tamaño, texto, e imagen?
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    const size = ui.Size(350, 120);
+    final customMarker = MyCustomMarker(
+      label: place.title,
+      duration: duration,
+    );
+    //llamamos al metodo paint para subir mi canvas y el tamaño del mismo
+    customMarker.paint(canvas, size);
+    //variable que almacenara el canvas ya dibujado
+    final picture = recorder.endRecording();
+    //y definimos sus dimensiones en esta variable
+    final image = await picture.toImage(
+      size.width.toInt(),
+      size.height.toInt(),
+    );
+    //convertira el canvas a formato png
+    final byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    //almacenamos por ultima vez en este formato para que BitmapDescriptor lo pueda leer
+    final bytes = byteData!.buffer.asUint8List();
+    //y lo retornamos para poder verlo en la vista
+    return BitmapDescriptor.fromBytes(bytes);
   }
 
 //esta funcion, libera las acciones realizadas por el usuario una vez cierre la app

@@ -51,6 +51,9 @@ class SearchPlaceController extends ChangeNotifier {
         //se valida que originFocusNode.hasFocus sea true y que ademas, el _originHasFocus sea false
         if (originFocusNode.hasFocus && !_originHasFocus) {
           _onOriginFocusNodeChanged(true);
+          //en caso de que !originFocusNode.hasFocus y el origen vacio, el input quedara vacio
+        } else if (!originFocusNode.hasFocus && _origin == null) {
+          originController.text = '';
         }
       },
     );
@@ -61,6 +64,8 @@ class SearchPlaceController extends ChangeNotifier {
         //se valida que destinationFocusNode.hasFocus sea true y que ademas, el _originHasFocus sea true
         if (destinationFocusNode.hasFocus && _originHasFocus) {
           _onOriginFocusNodeChanged(false);
+        } else if (!destinationFocusNode.hasFocus && _destination == null) {
+          destinationController.text = '';
         }
       },
     );
@@ -99,13 +104,24 @@ class SearchPlaceController extends ChangeNotifier {
           }
         } else {
           // print('llamada cancelada de la api');
-          //se elimina los llamados de _searchRepository en caso de que se elimine la query ingresada por el usuario o una peticion anterior
-          _searchRepository.cancel();
-          _places = [];
-          notifyListeners();
+          clearQuery();
         }
       },
     );
+  }
+
+//
+  void clearQuery() {
+    //se elimina los llamados de _searchRepository en caso de que se elimine la query ingresada por el usuario o una peticion anterior
+    _searchRepository.cancel();
+    _places = [];
+    //en caso de que alguno de estos campos sea borrado, el boton de "ok" se deshabilitara
+    if (_originHasFocus) {
+      _origin = null;
+    } else {
+      _destination = null;
+    }
+    notifyListeners();
   }
 
 //metodo que recibe la ubicacion de uno de los inputs

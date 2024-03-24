@@ -24,11 +24,11 @@ class MapView extends StatelessWidget {
           return gpsMessageWidget!;
         }
 
-        //esta es na ubicacion inicial del usuario, otorgada gracias a geolocator y dara un nivel de zoom de 10
+        //esta es la ubicacion inicial del usuario, otorgada gracias a geolocator y dara un nivel de zoom de 15
         final initialCameraPosition = CameraPosition(
           target: LatLng(state.initialPosition!.latitude,
               state.initialPosition!.longitude),
-          zoom: 10,
+          zoom: 15,
         );
         // widget de google map, este desplegara el mapa cpmp tal siempre y cuando la api key este bien,
         // tambien le pasamos la cameraposicion anteriormente creada para desplegar nuestra posicion dentro del mapa

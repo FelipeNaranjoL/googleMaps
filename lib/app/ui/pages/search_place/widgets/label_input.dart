@@ -7,13 +7,16 @@ class LabelInput extends StatefulWidget {
   final FocusNode focusNode;
   final String placeholder;
   final void Function(String) onChanged;
-  const LabelInput(
-      {Key? key,
-      required this.placeholder,
-      required this.onChanged,
-      required this.focusNode,
-      required this.controller})
-      : super(key: key);
+  final VoidCallback onClear;
+
+  const LabelInput({
+    Key? key,
+    required this.placeholder,
+    required this.onChanged,
+    required this.focusNode,
+    required this.controller,
+    required this.onClear,
+  }) : super(key: key);
 
   @override
   State<LabelInput> createState() => _LabelInputState();
@@ -28,6 +31,18 @@ class _LabelInputState extends State<LabelInput> {
     super.initState();
     // ahora _text almacenara el valor entregado por controller, o en otras palabras, el valor inicial
     _text = ValueNotifier(widget.controller.text);
+    widget.controller.addListener(
+      () {
+        //variable para almacenar el contenido de _text
+        final textFromController = widget.controller.text;
+        //si _textesta vacio en valor y no contiene nada, el valor por defecto sera nada
+        if (textFromController.isEmpty && _text.value.isNotEmpty) {
+          _text.value = '';
+        } else if (textFromController.isNotEmpty) {
+          _text.value = textFromController;
+        }
+      },
+    );
   }
 
 //cuerpo del label, el padding y otras decoraciones
@@ -76,7 +91,7 @@ class _LabelInputState extends State<LabelInput> {
                   //de tipo String a _text y se notificara a la vista del nuevo valor
                   widget.controller.text = '';
                   _text.value = '';
-                  widget.onChanged('');
+                  widget.onClear();
                 },
               ),
             ),
