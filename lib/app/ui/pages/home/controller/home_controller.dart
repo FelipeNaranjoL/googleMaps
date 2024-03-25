@@ -5,12 +5,12 @@ import 'package:found_me/app/domain/models/place.dart';
 import 'package:found_me/app/domain/repositories/routes_repository.dart';
 import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
+import 'package:found_me/app/ui/pages/home/controller/utils/set_route.dart';
+import 'package:found_me/app/ui/pages/home/controller/utils/set_zoom.dart';
 import 'package:found_me/app/ui/pages/home/widgets/circle_marker.dart';
-import 'package:found_me/app/ui/pages/home/widgets/custom_markers.dart';
 import 'package:found_me/app/utils/fit_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:ui' as ui;
 
 class HomeController extends ChangeNotifier {
   //exportacion del home_state.dart para poder trabajar con las variables creadas dentro del archivo
@@ -105,69 +105,13 @@ class HomeController extends ChangeNotifier {
     );
     //condiciones para que no se caigfa la app en caso de crear una polyline mala
     if (routes != null && routes.isNotEmpty) {
-      //esto es esto
-      //final copy = Map<MarkerId, Marker>.from(_state.markers);
-      //pero mas resumido
-      final markersCopy = {..._state.markers};
-      //se generan los id de los marcadores de manera personalizada y tambien para los puntos que se generaran en el mapa para que se entienda mejor
-      const originId = MarkerId('origin');
-      const destinationId = MarkerId('destination');
-      const originDot = MarkerId('originDot');
-      const destinationDot = MarkerId('destinationDot');
-
-      //variable para acceder a los datos de routes
-      final route = routes.first;
-      //variables que mostrara el icono dependiendo si es origin o destination
-      //si es origen, mostrara el icono de gps, si es destino, mostrara el tiempo de llegada estimada
-      final originIcon = await _placeToMarker(origin, null);
-      final destinationIcon = await _placeToMarker(destination, route.duration);
-
-      //dentro de los marcadores, se asignara el id, su posicion y su nombre flotante
-      //segun la informacion de su origen/destino
-      final originMarker = Marker(
-        markerId: originId,
-        position: origin.position,
-        icon: originIcon,
-        anchor: const Offset(0.5, 1.2),
-      );
-      final destinationMarker = Marker(
-        markerId: destinationId,
-        position: destination.position,
-        icon: destinationIcon,
-        anchor: const Offset(0.5, 1.2),
-      );
-      //se asigna el id dentro de la lista de originMarker/destinationMarker y en los puntos de originDot y destinationDot
-      markersCopy[originId] = originMarker;
-      markersCopy[destinationId] = destinationMarker;
-      markersCopy[originDot] = Marker(
-        markerId: originDot,
-        position: route.points.first,
-        icon: _dotMarker!,
-        anchor: const Offset(0.5, 0.5),
-      );
-      markersCopy[destinationDot] = Marker(
-        markerId: destinationDot,
-        position: route.points.last,
-        icon: _dotMarker!,
-        anchor: const Offset(0.5, 0.5),
-      );
-      //variable que almacenara la copia de la polyline, el id de la misma y el polyline
-      final polylinesCopy = {..._state.polilynes};
-      const polylineId = PolylineId('route');
-      final polyline = Polyline(
-        polylineId: polylineId,
-        points: route.points,
-        width: 2,
-      );
-      //guardamos la copia del polilyne dentro de la polyline en si junto con su id
-      polylinesCopy[polylineId] = polyline;
-      //se envia los datos asignados en el buscador al metodo copyWith
-      //reemplazando los valores de ese metodo con los asignados en este archivo
-      _state = _state.copyWith(
+      //llamada a la funcion de setRouteAndMarkers del archivo set_route.dart
+      _state = await setRouteAndMarkers(
+        state: state,
+        routes: routes,
         origin: origin,
         destination: destination,
-        markers: markersCopy,
-        polilynes: polylinesCopy,
+        dot: _dotMarker!,
       );
       //se le indica a _mapController que anime la camara para visualizar el origen y destino
       //que el usuario haya designado y se notifica a la app
@@ -186,64 +130,19 @@ class HomeController extends ChangeNotifier {
   Future<void> turnOnGps() => _geolocator.openAppSettings();
 
 // metodo que hace zoom al mapa
-  Future<void> zoomIn() => _zoom(true);
-
-  //metodo que quita zoom al mapa
-  Future<void> zoomOut() => _zoom(false);
-
-//funcionamiento del zoom
-//mientras _mapController sea distinto de nulo, se creara una variable zoom que controlara el nivel de
-//del mapa, si zoomIn es falso, se reducira el valor de zoom, llegando como limite a 0,
-// caso contrario, aumentara en 1
-  Future<void> _zoom(bool zoomIn) async {
+  Future<void> zoomIn() async {
     if (_mapController != null) {
-      double zoom = await _mapController!.getZoomLevel();
-      if (!zoomIn) {
-        if (zoom - 1 <= 0) {
-          return;
-        }
-      }
-      zoom = zoomIn ? zoom + 1 : zoom - 1;
-      //luego se obtiene la parte visible del mapa para calcular el centro entre la esquina superior derecha
-      //y la esquina inferior izquierda
-      final bounds = await _mapController!.getVisibleRegion();
-      final northeast = bounds.northeast;
-      final southwest = bounds.southwest;
-      final center = LatLng((northeast.latitude + southwest.latitude) / 2,
-          (northeast.longitude + southwest.longitude) / 2);
-      //se obtiene ese dato y se actualiza la camara para realizar la peticion de zoom que el usuario requiera
-      final cameraUpdate = CameraUpdate.newLatLngZoom(center, zoom);
-      await _mapController!.animateCamera(cameraUpdate);
+      //llama al metodo setZoom del archivo set_zoom.dart
+      await setZoom(_mapController!, true);
     }
   }
 
-//funcion que mostrara la duracion en tiempo entre 2 puntos
-  Future<BitmapDescriptor> _placeToMarker(Place place, int? duration) async {
-    //se crean las variables que almacenaran el tamaño, texto, e imagen?
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    const size = ui.Size(350, 120);
-    final customMarker = MyCustomMarker(
-      label: place.title,
-      duration: duration,
-    );
-    //llamamos al metodo paint para subir mi canvas y el tamaño del mismo
-    customMarker.paint(canvas, size);
-    //variable que almacenara el canvas ya dibujado
-    final picture = recorder.endRecording();
-    //y definimos sus dimensiones en esta variable
-    final image = await picture.toImage(
-      size.width.toInt(),
-      size.height.toInt(),
-    );
-    //convertira el canvas a formato png
-    final byteData = await image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-    //almacenamos por ultima vez en este formato para que BitmapDescriptor lo pueda leer
-    final bytes = byteData!.buffer.asUint8List();
-    //y lo retornamos para poder verlo en la vista
-    return BitmapDescriptor.fromBytes(bytes);
+  //metodo que quita zoom al mapa
+  Future<void> zoomOut() async {
+    if (_mapController != null) {
+      //llama al metodo setZoom del archivo set_zoom.dart
+      await setZoom(_mapController!, false);
+    }
   }
 
 //esta funcion, libera las acciones realizadas por el usuario una vez cierre la app
