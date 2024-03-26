@@ -30,10 +30,31 @@ class SearchPlaceController extends ChangeNotifier {
   final originController = TextEditingController();
   final destinationController = TextEditingController();
   // variables para saber cual fue seleccionado primero
-  bool _originHasFocus = true;
+  late bool _originHasFocus;
+  bool get originHasFocus => _originHasFocus;
 
 //constructor de _searchRepository
-  SearchPlaceController(this._searchRepository) {
+  SearchPlaceController(
+    this._searchRepository, {
+    required Place? origin,
+    required Place? destination,
+    required bool hasOriginFocus,
+  }) {
+    //obtener los campos de origen y destino automaticamente y delimitar que campo tendra el foco de atencion
+    _originHasFocus = hasOriginFocus;
+    _origin = origin;
+    _destination = destination;
+    if (_origin != null) {
+      originController.text = _origin!.title;
+    }
+    if (_destination != null) {
+      destinationController.text = _destination!.title;
+    }
+    if (_originHasFocus) {
+      originFocusNode.requestFocus();
+    } else {
+      destinationFocusNode.requestFocus();
+    }
     //esta variable almacena el resultado de la busqueda de autosuggets
     _subscription = _searchRepository.onResults.listen(
       (results) {
@@ -110,7 +131,7 @@ class SearchPlaceController extends ChangeNotifier {
     );
   }
 
-//
+//funcion que limpiara la variable query para que no haya ningun dato guardado en ella
   void clearQuery() {
     //se elimina los llamados de _searchRepository en caso de que se elimine la query ingresada por el usuario o una peticion anterior
     _searchRepository.cancel();

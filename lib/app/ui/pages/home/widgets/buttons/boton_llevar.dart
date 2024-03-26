@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_controller.dart';
-import 'package:found_me/app/ui/pages/search_place/search_place_page.dart';
+import 'package:found_me/app/ui/pages/home/controller/utils/go_to_search.dart';
 import 'package:provider/provider.dart';
 
 class DondeTeLlevo extends StatelessWidget {
@@ -13,6 +13,20 @@ class DondeTeLlevo extends StatelessWidget {
 //ingresar su destino o el lugar a donde quiera ir
   @override
   Widget build(BuildContext context) {
+    //trabajamos con el contexto mediante un boleano y un controller para ocultar los botones de zoom y buscador
+    final hide = context.select<HomeController, bool>(
+      (controller) {
+        final state = controller.state;
+        final originAndDestinationReady =
+            state.origin != null && state.destination != null;
+        return originAndDestinationReady ||
+            state.fetching ||
+            state.pickFromMap != null;
+      },
+    );
+    if (hide) {
+      return Container();
+    }
     return Positioned(
       bottom: 35,
       left: 20,
@@ -50,28 +64,7 @@ class DondeTeLlevo extends StatelessWidget {
               height: 20,
             ),
             CupertinoButton(
-              onPressed: () async {
-                final route = MaterialPageRoute<SearchResponse>(
-                  builder: (_) => const SearchPlacePage(),
-                );
-                final response = await Navigator.push<SearchResponse>(
-                  context,
-                  route,
-                );
-                //en caso de que la respuesta sea distinta de nula, asignaremos el origen y el destino deseado por el usuario
-                if (response != null) {
-                  WidgetsBinding.instance!.addPostFrameCallback(
-                    (_) {
-                      // print('origen: ${response.origin.title}');
-                      final controller = context.read<HomeController>();
-                      controller.setOriginAndDestination(
-                        response.origin,
-                        response.destination,
-                      );
-                    },
-                  );
-                }
-              },
+              onPressed: () => goToSearch(context),
               //el resto es contenido visual para hacer mas atractivo la vista
               padding: EdgeInsets.zero,
               child: Container(

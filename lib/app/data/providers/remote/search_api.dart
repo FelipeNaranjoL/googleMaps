@@ -7,7 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 class SearchAPI {
   final Dio _dio;
   SearchAPI(this._dio);
-  //
+  //variable que cancelara la llamada
   CancelToken? _cancelToken;
 //esta variable escuchara los cambbios que obtenga de la lista de lugares
   final _controller = StreamController<List<Place>?>.broadcast();

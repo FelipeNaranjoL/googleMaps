@@ -1,5 +1,5 @@
 import 'package:found_me/app/domain/models/place.dart';
-import 'package:found_me/app/ui/pages/home/widgets/custom_markers.dart';
+import 'package:found_me/app/ui/pages/home/widgets/custom_painters/custom_markers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:ui' as ui;
 
@@ -8,7 +8,7 @@ Future<BitmapDescriptor> placeToMarker(Place place, int? duration) async {
   //se crean las variables que almacenaran el tamaño, texto, e imagen?
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
-  const size = ui.Size(350, 120);
+  const size = ui.Size(380, 100);
   final customMarker = MyCustomMarker(
     label: place.title,
     duration: duration,

@@ -7,7 +7,7 @@ import 'package:found_me/app/helpers/current_position.dart';
 import 'package:found_me/app/ui/pages/home/controller/home_state.dart';
 import 'package:found_me/app/ui/pages/home/controller/utils/set_route.dart';
 import 'package:found_me/app/ui/pages/home/controller/utils/set_zoom.dart';
-import 'package:found_me/app/ui/pages/home/widgets/circle_marker.dart';
+import 'package:found_me/app/ui/pages/home/widgets/custom_painters/circle_marker.dart';
 import 'package:found_me/app/utils/fit_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -26,7 +26,7 @@ class HomeController extends ChangeNotifier {
   final GeolocatorWrapper _geolocator;
   //variable que almacenara la clase RoutesRepository y su metodo
   final RoutesRepository _routesRepository;
-  //
+  //variable
   BitmapDescriptor? _dotMarker;
 
 //funcion encargada de ejecutar _init y _geolocator, _routesRepository
@@ -94,10 +94,22 @@ class HomeController extends ChangeNotifier {
 //funcion de generar un mapa
   void onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    final cameraUpdate = CameraUpdate.newLatLng(CurrentPosition.i.value!);
+    _mapController!.moveCamera(cameraUpdate);
   }
 
 //esta funcion define el origen y destino que haya seleccionado el usuario
   void setOriginAndDestination(Place origin, Place destination) async {
+    //condicion que si nos entrega valores distinto de null, borrara la informacion del rectangulo
+    if (_state.origin != null && _state.destination != null) {
+      clearData(true);
+    } else {
+      //caso contrario, cambiara el valor de fetching, evitandonos ver los demas comandos al momento de alternar origen y destino
+      _state = state.copyWith(
+        fetching: true,
+      );
+      notifyListeners();
+    }
     //llamado del metodo get para formar una polilyne
     final routes = await _routesRepository.get(
       origin: origin.position,
@@ -123,7 +135,20 @@ class HomeController extends ChangeNotifier {
         ),
       );
       notifyListeners();
+    } else {
+      _state = _state.copyWith(
+        fetching: false,
+      );
+      notifyListeners();
     }
+  }
+
+//metodo que cambiara de lugar el origin y destination,osea, volteandolos
+  Future<void> exchange() async {
+    final origin = state.destination!;
+    final destination = state.origin!;
+    clearData();
+    setOriginAndDestination(origin, destination);
   }
 
 //funcion encargada de redirigir al usuario a las configuraciones de gps para habilitarlo
@@ -143,6 +168,34 @@ class HomeController extends ChangeNotifier {
       //llama al metodo setZoom del archivo set_zoom.dart
       await setZoom(_mapController!, false);
     }
+  }
+
+//funcion que borrara los datos de origin y destination para sacar el contenedor de la vista del mapa
+  void clearData([bool fetching = false]) {
+    _state = _state.clearOriginAndDestination(fetching);
+    notifyListeners();
+  }
+
+//metodo que enviara los datos al copywith con  los nuevos valores que se le pasanron con PickFromMap
+  void pickFromMap(bool isOrigin) {
+    _state = _state.setPickFromMap(isOrigin);
+    notifyListeners();
+  }
+
+//metodo que nos permitira salir del modo de seleccion propia de ubicacion
+  void cancelPickFromMap() {
+    _state = _state.cancelPickFromMap();
+    notifyListeners();
+  }
+
+//metodo que al momento de entrar en modo de seleccion propia de ubicacion, me enviara a mi posicion
+  Future<void> goToMyPosition() async {
+    final zoom = await _mapController!.getZoomLevel();
+    final cameraUpdate = CameraUpdate.newLatLngZoom(
+      CurrentPosition.i.value!,
+      zoom < 16 ? 16 : zoom,
+    );
+    return _mapController!.animateCamera(cameraUpdate);
   }
 
 //esta funcion, libera las acciones realizadas por el usuario una vez cierre la app

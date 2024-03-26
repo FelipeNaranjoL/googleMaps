@@ -32,7 +32,7 @@ class SearchAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ? () {
                       Navigator.pop(
                         context,
-                        SearchResponse(origin, destination),
+                        OriginAndDestinationResponse(origin, destination),
                       );
                     }
                   : null,

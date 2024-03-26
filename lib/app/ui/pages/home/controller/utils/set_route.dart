@@ -60,7 +60,7 @@ Future<HomeState> setRouteAndMarkers({
     anchor: const Offset(0.5, 0.5),
   );
   //variable que almacenara la copia de la polyline, el id de la misma y el polyline
-  final polylinesCopy = {...state.polilynes};
+  final polylinesCopy = {...state.polylines};
   const polylineId = PolylineId('route');
   final polyline = Polyline(
     polylineId: polylineId,
@@ -76,5 +76,6 @@ Future<HomeState> setRouteAndMarkers({
     destination: destination,
     markers: markersCopy,
     polilynes: polylinesCopy,
+    fetching: false,
   );
 }

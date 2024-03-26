@@ -1,4 +1,4 @@
-//
+//clase que almacenara la ruta para la creacion del polilyne
 import 'package:found_me/app/domain/models/route.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 
